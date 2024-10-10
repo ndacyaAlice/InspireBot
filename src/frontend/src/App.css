@@ -1,0 +1,101 @@
+:root{
+    ---backgroudColor: #f6f9fc;
+    ---background: #ffffff;
+    ---BtnColor: #2566f8
+}
+
+
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html,
+body{
+  width: 100%;
+  height: 100%;
+}
+
+.container{
+    margin:auto;
+    width: 60%
+}
+.Form {
+    width: 100%;
+    position: relative
+}
+.textArea{
+    width: 100%;
+    height: 20vh;
+    border-radius: 10px;
+    resize: none;
+    outline: none;
+    padding: 14px ;
+    font-size: 16px;
+}
+.buttonComment{
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    padding: 10px;
+    font-size: 14px;
+    border-radius: 8px;
+    border: none;
+}
+.DeleteBtn{
+    color: red;
+    background: transparent;
+    border: none
+}
+/* Top bar style starts  */
+.topBar{
+    display: flex;
+    justify-content: space-between;
+    border-bottom: #f6f9fc;
+    background-color: var(---backgroudColor);
+    padding: 14px;
+}
+
+.LoginBtn{ 
+    font-size: 18px;
+    padding: 8px 20px ;
+    border: none;
+    border-radius: 8px;
+    background: var(---BtnColor);
+    color: white
+
+}
+.logo{
+    font-family: "NeueMontreal, Arial, sans-serif";
+    font-weight: bold;
+    font-size: 32px;
+
+}
+/* Top bar style ends */
+
+/* Dashboard style starts */
+.Dashboard{
+    margin-top: 20px;
+    width: 100%
+}
+.Title{
+    margin: auto;
+    width: 70%;
+    display: flex;
+    justify-content: space-between;
+}
+.AddBtn{
+    font-size: 18px;
+    padding: 8px 24px;
+    border: none;
+    border-radius: 8px;
+    background: var(---BtnColor);
+    color: white;
+    font-weight: bold;
+}
+.accordionContainer{
+    margin: auto;
+    width: 70%
+}
+/* Dashboard style ends */
