@@ -41,8 +41,8 @@ const Add=({BusinessId})=>{
             const formData = new FormData(event.currentTarget);
             const formJson = Object.fromEntries(formData.entries());
             const email = formJson.email;
-            console.log(email);
-            await invite(email,BusinessId)
+           const v= await invite(email,BusinessId)
+           console.log(v)
             // handleClose();
           },
         }}

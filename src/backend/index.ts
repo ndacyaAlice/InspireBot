@@ -80,7 +80,7 @@ import {
 
   export default Canister({
 
-    createProfile: update([UserProfileProps],Result(UserProfile,ErrorMessage),(payload)=>{
+    createProfile: update([UserProfileProps],Result(text,ErrorMessage),(payload)=>{
         try{
             if(!payload.userEmail || !payload.userName){
               return Err({InvalidPayload: "Invalid payload"})
@@ -89,6 +89,7 @@ import {
             if(Profiles.some((profile:UserProfile)=>(profile.userEmail ===payload.userEmail ))){
               return Err({Err:"Email already exists"})
             }
+
             const NewProfile:UserProfile ={
               ...payload,
               userId: ic.caller()
@@ -118,13 +119,18 @@ import {
             if(!payload.promptIdea || !payload.aiIdea){
                 return Err({InvalidPayload: "Invalid payload"})
             }
-
+            const ProfileOpt= UserProfileStorage.get(ic.caller());
+            if(!ProfileOpt){
+             return Err({NotFound:"created profile please"})
+            }
+        
             const NewBusinessIdea:BusinessIdea= {
                 id: uuidv4(),
                ...payload,
                 owner: ic.caller(),
-                contributors: [],
+                contributors: [{"email": ProfileOpt.userEmail,"name": ProfileOpt.userName}],
                 contributions: [],
+         
                 createdAt : getCurrentDate()
             }
              BusinessIdeaStorage.insert(NewBusinessIdea.id,NewBusinessIdea);
@@ -133,13 +139,13 @@ import {
             return Err({Err:`Error occured ${err.message}`})
         }
     }),
-    getMyBusiness: query([], Result(BusinessIdea,ErrorMessage), ()=>{
+    getMyBusiness: query([], Result(Vec(BusinessIdea),ErrorMessage), ()=>{
         try{
            const ideas = BusinessIdeaStorage.values();
            if(ideas.length === 0 ){
             return Err({Empty: "No available Business"})
            }
-           const MyIdea = ideas.filter((idea:BusinessIdea)=>(idea.owner.text === ic.caller().text));
+           const MyIdea = ideas.filter((idea:BusinessIdea)=>(JSON.stringify(idea.owner) === JSON.stringify(ic.caller())));
            if(MyIdea.length === 0) {
             return Err({Empty:'You do not have business idea'})
            }
@@ -154,9 +160,11 @@ import {
             if(!email || !businessId){
                 return Err({InvalidPayload:"Invalid payload"});
             }
-     
+        
+            console.log(email)
+            console.log(businessId)
             const businessOpt = BusinessIdeaStorage.get(businessId);
-            if(businessOpt){
+            if(!businessOpt){
                 return Err({ NotFound:"Business idea does not exist"})
             }
            const users = UserProfileStorage.values();
@@ -180,16 +188,18 @@ import {
     }),
     whereIContribute: query([], Result(Vec(BusinessIdea),ErrorMessage),()=>{
         try{
-           const ProfileOpt= UserProfile.get(ic.caller());
+           const ProfileOpt= UserProfileStorage.get(ic.caller());
            const businessIdeas = BusinessIdeaStorage.values()
-           if(ProfileOpt){
+         
+           if(!ProfileOpt){
             return Err({NotFound:"created profile please"})
            }
-           if(businessIdeas){
+           if(businessIdeas.length === 0){
             return Err({Empty:"No business idea available"})
            }
-          
-           const businessIdea = businessIdeas.filter((idea:BusinessIdea)=>(
+         
+           const businessIdea = businessIdeas.filter(
+            (idea:BusinessIdea)=>(
             idea.contributors.map((item:contributorsProps)=>(item.email)).includes(ProfileOpt.userEmail)
            ))
            if(businessIdea.length === 0){
@@ -207,14 +217,14 @@ import {
                return Err({InvalidPayload:"Invalid payload"});
             }
             const businessOpt = BusinessIdeaStorage.get(businessId);
-            if(businessOpt){
+            if(!businessOpt){
                 return Err({NotFound:"The business idea does not exist"})
             }
-            const contributorProfile = UserProfile.get(ic.caller());
-            if(contributorProfile){
+            const contributorProfile = UserProfileStorage.get(ic.caller());
+            if(!contributorProfile){
                 return Err({NotFound:"You do not have profile"})
             }
-            if(!businessOpt.contributors.map((item:contributorsProps)=>(item.email).includes(contributorProfile.userEmail))){
+            if(!businessOpt.contributors.map((item:contributorsProps)=>(item.email)).includes(contributorProfile.userEmail)){
               return Err({Err:"Not allowed to contribute"})
             }
 
@@ -240,10 +250,10 @@ import {
             return Err({InvalidPayload:"not ids provided"})
           }
           const businessOpt = BusinessIdeaStorage.get(businessId);
-          if(businessOpt){
+          if(!businessOpt){
             return Err({NotFound:"The business idea does not exist"})
           }
-          if(businessOpt.owner.text != ic.caller().text){
+          if(JSON.stringify(businessOpt.owner) != JSON.stringify(ic.caller())){
             return Err({Err:"Unauthorized"});
           }
 

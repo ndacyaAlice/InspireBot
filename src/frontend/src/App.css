@@ -98,4 +98,29 @@ body{
     margin: auto;
     width: 70%
 }
+/* userProfile style starts */
+.formContainer{
+    position: relative;
+    width: 100%
+}
+.Form1{
+    width: 50%;
+    margin: auto;
+    position:absolute;
+    top: 25%;
+    left: 20%;
+}
+.SubmitBtn{
+    width: 100%;
+    padding:8px;
+    background: var(---BtnColor);
+    border: none;
+    border-radius: 14px;
+    font-size: 18px;
+    color: white;
+    }
+.TextField{
+    margin-bottom: 20px;
+}
+/* user Profile style ends */
 /* Dashboard style ends */

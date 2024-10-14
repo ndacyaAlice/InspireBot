@@ -7,7 +7,7 @@ const getProfile=async()=>{
 };
 
 const createIdea=async(BusinessIdea)=>{
-  return await window.canister.InspireBotApi.getProfile(BusinessIdea)
+  return await window.canister.InspireBotApi.createIdea(BusinessIdea)
 }
 
 const getMyBusiness=async()=>{ 

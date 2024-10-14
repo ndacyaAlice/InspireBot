@@ -1,17 +1,17 @@
-import React, {useState} from "react";
+import React, {useState,useContext} from "react";
 import  {
     Button,
-    TextField,
     Dialog,
     DialogActions,
     DialogContent,
-    DialogContentText,
     DialogTitle
    } from '@mui/material';
 import CustomizedAccordions from "../component/Accordion";
-import { useNavigate } from "react-router";
 import ApiCall from "../context/ApiCall";
 import { createIdea } from "../utils/endpoints";
+import AuthContext from "../context/authContext";
+import Profile from "../component/Profile";
+
 const Dashboard=()=>{
     const [open, setOpen] = useState(false);
     const  [inputIdea, setInputIdea] = useState()
@@ -23,14 +23,19 @@ const Dashboard=()=>{
     const handleClose = () => {
       setOpen(false);
     };
-   // Navigation
-  const navigate = useNavigate()
-  const goToContribute=()=>{
-    navigate('/contribute')
+  //Context
+
+  const {hasProfile} = useContext(AuthContext);
+  console.log(hasProfile)
+  if(!hasProfile){
+    return <Profile/>
   }
+
   // create business idea 
+
   const { GenBusinessIdea } = ApiCall()
-  const submit=async()=>{
+  const submit=async(e)=>{
+    e.preventDefault()
     if(inputIdea){
         const aiIdea =await GenBusinessIdea(inputIdea);
         if(aiIdea){
@@ -48,7 +53,7 @@ const Dashboard=()=>{
          <div className="Dashboard">
          <div className="Title">
             <p>Dashboard</p>
-            <p onClick={goToContribute} style={{textDecoration:"underline", cursor:"pointer"}}>Contribute</p>
+            <a href="/contribute" style={{textDecoration:"underline", cursor:"pointer"}}>Contribute</a>
             <button className="AddBtn" onClick={handleClickOpen}>+ Add Idea</button>
          </div>
          <div style={{marginTop:"20px", marginBottom:"40px"}}></div>
@@ -59,20 +64,13 @@ const Dashboard=()=>{
     <Dialog
         open={open}
         onClose={handleClose}
-        // PaperProps={{
-        //   component: 'form',
-        //   onSubmit: (event) => {
-        //     event.preventDefault();
-        //     const formData = new FormData(event.currentTarget);
-        //     const formJson = Object.fromEntries(formData.entries());
-        //     const email = formJson.email;
-        //     console.log(email);
-        //     handleClose();
-        //   },
-        // }}
+        PaperProps={{
+          sx: { width: '600px', maxWidth: 'unset' },
+        }}
+     
       >
         <DialogTitle>Your Prompt</DialogTitle>
-        <DialogContent>
+        <DialogContent >
         <form className="Form" onSubmit={submit}>
                  <textarea 
                  className="textArea"

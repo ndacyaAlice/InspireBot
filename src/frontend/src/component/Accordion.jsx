@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState,useEffect} from 'react';
 import { styled } from '@mui/material/styles';
 import  ArrowForwardIosSharpIcon from '@mui/icons-material/ArrowForwardIosSharp';
 import { 
@@ -12,7 +12,7 @@ import TotalAvatars from './Avators';
 import Add from "./Add"
 import Chips from './Chip';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { getMyBusiness } from '../utils/endpoints';
+import { contribute, deleteContribution, getMyBusiness } from '../utils/endpoints';
 
 const Accordion = styled((props) => (
   <MuiAccordion disableGutters elevation={0} square {...props} />
@@ -51,8 +51,10 @@ const AccordionDetails = styled(MuiAccordionDetails)(({ theme }) => ({
 }));
 
 export default function CustomizedAccordions() {
-  const [expanded, setExpanded] = useState('panel1');
-  const [MybusinessIdea, setMybusinessIdea] = useState()
+  const [expanded, setExpanded] = useState(" ");
+  const [MybusinessIdea, setMybusinessIdea] = useState([]);
+  const [inputIdea, setInputIdea ] = useState();
+  const [error,setError] = useState()
 
   const handleChange = (panel) => (event, newExpanded) => {
     setExpanded(newExpanded ? panel : false);
@@ -60,91 +62,111 @@ export default function CustomizedAccordions() {
   useEffect(async()=>{
      const GetMyBusiness=async()=>{
      const ideas = await getMyBusiness();
-     setMybusinessIdea(ideas)
+     if(ideas.Ok){
+      setMybusinessIdea(ideas.Ok)
+      setError(" ")
+     }else if(ideas.Err){
+      setError(ideas.Err)
+     }
+     
      }
      await GetMyBusiness()
   },[getMyBusiness])
 
   // delete function
  const deletor=async(businessId,contributeId)=>{
- await deleteContribution(businessId,contributeId)
- 
+ await deleteContribution(businessId,contributeId) 
+}
+const submit=async(e)=>{
+  e.preventDefault();
+  const  content  = e.target[0].value;
+  const businessId = e.target[1].value;
+  if(inputIdea){
+    await contribute(businessId,content);
+  }
 }
 
   return (
     <div>
-     {MybusinessIdea?.map((Ideas, index)=>(
-       <Accordion expanded={expanded === 'panel1'} key={Ideas.id} onChange={handleChange('panel1')} 
-       sx={{borderRadius: "8px", marginBottom:"15px"}}
-       >
-         <AccordionSummary aria-controls="panel1d-content" id="panel1d-header">
-          
-               <Box>
-               <Box sx={{display:"flex",justifyContent:"space-between", 
-                 marginBottom: "20px"}}>
-                 <Box><Chips name={index+1} /></Box>
-                 <Typography>{Ideas.createdAt}</Typography>
-               </Box>
-               
-               <Box>
-               <Typography sx={{marginBottom:"10px", fontWeight:"bold"}}>
-                 USER PROMPT
-                 </Typography>
-                  <Typography>
-                   {Ideas.promptIdea}
-                  </Typography>
-           </Box>
-               </Box>
-         </AccordionSummary>
-         <AccordionDetails >
-          <Box sx={{overflowY:"scroll", height: "60vh"}}>
+     {MybusinessIdea?
+    (MybusinessIdea.map((Ideas, index)=>(
+      <Accordion expanded={expanded === `${Ideas.id}`} key={Ideas.id} onChange={handleChange(Ideas.id)} 
+      sx={{borderRadius: "8px", marginBottom:"15px"}}
+      >
+        <AccordionSummary aria-controls="panel1d-content" id="panel1d-header">
          
-          <Box sx={{display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:"10px"}}>
-             <Add BusinessId={Ideas.id}/>
-             <TotalAvatars contributors={Ideas.contributors}/>
-         </Box>
+              <Box>
+              <Box sx={{display:"flex",justifyContent:"space-between", 
+                marginBottom: "20px"}}>
+                <Box><Chips name={index+1} /></Box>
+                <Typography>{Ideas.createdAt}</Typography>
+              </Box>
+              
+              <Box>
+              <Typography sx={{marginBottom:"10px", fontWeight:"bold"}}>
+                USER PROMPT
+                </Typography>
+                 <Typography>
+                  {Ideas.promptIdea}
+                 </Typography>
+          </Box>
+              </Box>
+        </AccordionSummary>
+        <AccordionDetails >
+         <Box sx={{overflowY:"scroll", height: "60vh"}}>
         
-         <Box>
-         <Typography sx={{marginBottom:"10px", fontWeight:"bold"}}>
-                 AI RESPONSE
-         </Typography>
- 
-             <Typography>
-             {Ideas.aiIdea}
-              </Typography>
-         </Box>
-         <Box sx={{display:"flex", justifyContent:"space-between", marginTop: "40px"}}>
-              <form className="Form">
-                 <textarea className="textArea">
- 
-                 </textarea>
+         <Box sx={{display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:"10px"}}>
+            <Add BusinessId={Ideas.id}/>
+            <TotalAvatars contributors={Ideas.contributors}/>
+        </Box>
+       
+        <Box>
+        <Typography sx={{marginBottom:"10px", fontWeight:"bold"}}>
+                AI RESPONSE
+        </Typography>
+
+            <Typography>
+            {Ideas.aiIdea}
+             </Typography>
+        </Box>
+        <Box sx={{display:"flex", justifyContent:"space-between", marginTop: "40px"}}>
+              <form className="Form" onSubmit={submit}>
+                 <textarea 
+                   className="textArea"
+                   placeholder="Suggest what to change or add "
+                   value={inputIdea}
+                   name="content"
+                   onChange={(e) => setInputIdea(e.target.value)}
+                 />
+                  <input type="hidden" value={Ideas.id} name="businessId"/>
                  <button type="submit" className="buttonComment">
                      Contribute
                  </button>
               </form>
+        </Box>
+         {Ideas.contributions?.map((contribution)=>(
+           <Box sx={{marginTop:"20px", marginBottom:"20px",
+             boxShadow: "rgba(0, 0, 0, 0.16) 0px 1px 4px",
+             padding: "14px"
+             
+            }} 
+            key={contribution.contrId}
+            >
+              <Box sx={{display:"flex", justifyContent:"space-between", marginBottom:"10px"}} >
+               <Typography sx={{padding: "4px 16px", background:"grey", borderRadius: "8px", color: "white"}}>{contribution.email}</Typography>
+               <Typography>{contribution.createdAt}</Typography>
+              </Box>
+              <Typography>
+                 {contribution.content}
+              </Typography>
+              <Box><button className="DeleteBtn" onClick={()=>{deletor(Ideas.id,contribution.contrId)}}><DeleteIcon/></button></Box>
+           </Box> 
+         ))}  
          </Box>
-          {Ideas.contributions.map((contribution)=>(
-            <Box sx={{marginTop:"20px", marginBottom:"20px",
-              boxShadow: "rgba(0, 0, 0, 0.16) 0px 1px 4px",
-              padding: "14px"
-              
-             }} 
-             key={contribution.contrId}
-             >
-               <Box sx={{display:"flex", justifyContent:"space-between", marginBottom:"10px"}} >
-                <Typography sx={{padding: "4px 16px", background:"grey", borderRadius: "8px", color: "white"}}>{contribution.email}</Typography>
-                <Typography>{contribution.createdAt}</Typography>
-               </Box>
-               <Typography>
-                  {contribution.content}
-               </Typography>
-               <Box><button className="DeleteBtn" onClick={()=>{deletor(Ideas.id,contribution.contrId)}}><DeleteIcon/></button></Box>
-            </Box> 
-          ))}  
-          </Box>
-         </AccordionDetails>
-       </Accordion>
-     ))}
+        </AccordionDetails>
+      </Accordion>
+    ))):(<p>NO Business idea</p>) 
+    }
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState,useEffect} from 'react';
 import { styled } from '@mui/material/styles';
 import  ArrowForwardIosSharpIcon from '@mui/icons-material/ArrowForwardIosSharp';
 import { 
@@ -10,7 +10,6 @@ import {
  import  MuiAccordionDetails from "@mui/material/AccordionDetails"
 import TotalAvatars from './Avators';
 import Chips from './Chip';
-import DeleteIcon from '@mui/icons-material/Delete';
 import { whereIContribute } from '../utils/endpoints';
 
 const Accordion = styled((props) => (
@@ -50,8 +49,8 @@ const AccordionDetails = styled(MuiAccordionDetails)(({ theme }) => ({
 }));
 
 export default function CustomizedAccordionSupport() {
-  const [expanded, setExpanded] = useState('panel1');
-  const [otherbusinessIdea, setOtherbusinessIdea] = useState();
+  const [expanded, setExpanded] = useState(" ");
+  const [otherbusinessIdea, setOtherbusinessIdea] = useState([]);
   const [inputIdea, setInputIdea ] = useState();
 
   const handleChange = (panel) => (event, newExpanded) => {
@@ -60,12 +59,14 @@ export default function CustomizedAccordionSupport() {
   useEffect(async()=>{
      const GetMyBusiness=async()=>{
      const ideas = await whereIContribute();
-     setOtherbusinessIdea(ideas)
+     console.log(ideas)
+     setOtherbusinessIdea(ideas.Ok)
      }
      await GetMyBusiness()
   },[whereIContribute])
 
   const submit=async(e)=>{
+    e.preventDefault();
     const {content, businessId } = e.target.value
     if(inputIdea){
        await contribute(businessId,content)
@@ -74,8 +75,9 @@ export default function CustomizedAccordionSupport() {
 
   return (
     <div>
-     {otherbusinessIdea?.map((Ideas, index)=>(
-       <Accordion expanded={expanded === 'panel1'} key={Ideas.id} onChange={handleChange('panel1')} 
+     {otherbusinessIdea?(
+      otherbusinessIdea?.map((Ideas, index)=>(
+       <Accordion expanded={expanded === `${Ideas.id}`} key={Ideas.id} onChange={handleChange(Ideas.id)} 
        sx={{borderRadius: "8px", marginBottom:"15px"}}
        >
          <AccordionSummary aria-controls="panel1d-content" id="panel1d-header">
@@ -145,7 +147,7 @@ export default function CustomizedAccordionSupport() {
           </Box>
          </AccordionDetails>
        </Accordion>
-     ))}
+     ))):(<p>NO</p>)}
     </div>
   );
 }

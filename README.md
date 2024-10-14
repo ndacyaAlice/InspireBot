@@ -36,4 +36,8 @@ InspireBot combines AI and the ICP blockchain to help users generate innovative 
   
   `
 
+  ,
+  
+ 
+
 

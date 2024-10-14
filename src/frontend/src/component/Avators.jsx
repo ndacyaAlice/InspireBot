@@ -16,10 +16,6 @@ import {
     Paper
 } from '@mui/material';
 
-function createData(email,name,status) {
-  return {email, name, status };
-}
-
 
 
 export default function TotalAvatars({contributors}) {
@@ -65,7 +61,6 @@ export default function TotalAvatars({contributors}) {
           <TableRow>
             <TableCell>Email</TableCell>
             <TableCell align="right">Name</TableCell>
-            <TableCell align="right">Status</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
@@ -78,7 +73,6 @@ export default function TotalAvatars({contributors}) {
                 {row.email}
               </TableCell>
               <TableCell align="right">{row.name}</TableCell>
-              <TableCell align="right">delete</TableCell>
             </TableRow>
           ))}
         </TableBody>

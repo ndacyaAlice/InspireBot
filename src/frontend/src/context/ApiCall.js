@@ -7,33 +7,36 @@ const ApiCall = () => {
         const CHATGPT_API_URL = "https://api.openai.com/v1/chat/completions";
 
         try {
-            const data = {
-                model: "gpt-3.5-turbo",
-                messages: [
-                    { role: "system", content: "You are a helpful assistant that generates business ideas." },
-                    { role: "user", content: `Generate a thorough business idea based on the following prompt:\n\n${prompt}` },
-                ],
-                max_tokens: 150, // Adjust this based on how detailed you want the response to be
-                temperature: 0.7,
-            };
+            // const data = {
+            //     model: "gpt-3.5-turbo",
+            //     messages: [
+            //         { role: "system", content: "You are a helpful assistant that generates business ideas." },
+            //         { role: "user", content: `Generate a thorough business idea based on the following prompt:\n\n${prompt}` },
+            //     ],
+            //     max_tokens: 150, 
+            //     temperature: 0.7,
+            // };
 
-            const response = await fetch(CHATGPT_API_URL, {
-                method: "POST",
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${CHATGPT_API_KEY}`,
-                },
-                body: JSON.stringify(data),
-            });
+            // const response = await fetch(CHATGPT_API_URL, {
+            //     method: "POST",
+            //     headers: {
+            //         'Content-Type': 'application/json',
+            //         'Authorization': `Bearer ${CHATGPT_API_KEY}`,
+            //     },
+            //     body: JSON.stringify(data),
+            // });
 
-            if (!response.ok) {
-                console.error("API request failed:", response.statusText);
-                return null; 
+            // if (!response.ok) {
+            //     console.error("API request failed:", response.statusText);
+            //     return null; 
+            // }
+
+            // const respo = await response.json();
+            // return respo.choices[0].message.content.trim();
+            if(!prompt){
+                return null
             }
-
-            const respo = await response.json();
-            return respo.choices[0].message.content.trim();
-
+             return prompt
         } catch (error) {
             console.error("Error occurred during API request:", error);
             return null; 

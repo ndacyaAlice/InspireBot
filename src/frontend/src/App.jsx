@@ -4,7 +4,8 @@ import { Route, BrowserRouter, Routes } from "react-router-dom";
 import Dashboard from "./pages/Dashboard";
 import Layout from "./pages/layout";
 import OtherSupport from "./pages/otherSupport";
-
+import { AuthContextProvider } from "../src/context/authContext";
+import HomePage from "./pages/HomePage";
 
 
 
@@ -13,7 +14,14 @@ const routes = [
         path: '/',
         element: <Layout/>,
         children: [
-            {path:'/', element:<Dashboard/>},
+            {path:'/', element:<HomePage/>},
+        ]
+    },
+    {
+        path: '/',
+        element: <AuthContextProvider><Layout/></AuthContextProvider>,
+        children: [
+            {path:'Dashboard/', element:<Dashboard/>},
             {path:'/Contribute', element: <OtherSupport/>}
         ]
     }
