@@ -1,6 +1,7 @@
 import { useState, useEffect, createContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { getProfile } from "../utils/endpoints";
+import { CircularProgress } from "@mui/material";
 
 
 
@@ -33,8 +34,7 @@ export const AuthContextProvider = ({ children }) => {
 
     if (hasProfile === null) {
         return  <div style={{textAlign: "center"}}>
-        {/* <CircularProgress size={50} color="primary" /> */}
-        <p>Loading</p>
+        <CircularProgress size={50} color="primary" />
     </div>
     }
 

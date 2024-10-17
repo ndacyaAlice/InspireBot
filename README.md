@@ -26,6 +26,35 @@ InspireBot combines AI and the ICP blockchain to help users generate innovative 
 ### Backend
 - **Blockchain**: ICP canisters to store business idea, invite contributors, contribute, read your own ideas.
 
+## Setup Instructions
+
+### Prerequisites
+
+Before you begin, ensure you have met the following requirements:
+
+- **dfx**: You have installed the latest version of the DFINITY Canister SDK, `dfx`. You can download it from the DFINITY SDK page. [installation guide](https://demergent-labs.github.io/azle/get_started.html#installation)
+
+ ```
+  use version dfx 0.22.0
+ ```
+- **Node.js**: You have installed Node.js, version 18 or above.
+```
+ v20.12.2
+
+```
+- Azle version use 
+ ```
+  azle 0.24.1
+ ```
+
+ - podman verion use
+
+ ```
+  podman version 3.4.4
+  
+ ```
+Please ensure all these prerequisites are met before proceeding with the setup of the project.
+
  # Installation 
   `
   - Clone the repository

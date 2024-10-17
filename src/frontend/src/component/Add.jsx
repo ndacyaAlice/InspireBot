@@ -8,13 +8,16 @@ import  {
     DialogContentText,
     DialogTitle ,
     Box,
-    Fab 
+    Fab, 
+    CircularProgress
    } from '@mui/material';
 import AddIcon from "@mui/icons-material/Add";
-import { invite } from "../utils/endpoints";
+import { InviteThunk } from "../redux/action/invite";
+import { useDispatch, useSelector } from "react-redux";
 
 const Add=({BusinessId})=>{
     const [open, setOpen] = useState(false);
+    const dispatch = useDispatch()
 
     const handleClickOpen = () => {
       setOpen(true);
@@ -23,7 +26,7 @@ const Add=({BusinessId})=>{
     const handleClose = () => {
       setOpen(false);
     };
-  
+    const {  load, invite, error } = useSelector((state)=>state.invite)
     return (
        <>
          <Box sx={{ '& > :not(style)': { m: 1 } }}>
@@ -41,9 +44,8 @@ const Add=({BusinessId})=>{
             const formData = new FormData(event.currentTarget);
             const formJson = Object.fromEntries(formData.entries());
             const email = formJson.email;
-           const v= await invite(email,BusinessId)
-           console.log(v)
-            // handleClose();
+           dispatch(InviteThunk({email,BusinessId}))
+          //  handleClose();
           },
         }}
       >
@@ -66,7 +68,7 @@ const Add=({BusinessId})=>{
         </DialogContent>
         <DialogActions>
           <Button onClick={handleClose}>Cancel</Button>
-          <Button type="submit">Invite</Button>
+          { load?<CircularProgress size={20} color="primary" />:<Button type="submit">Invite</Button>}
         </DialogActions>
       </Dialog></>
     )

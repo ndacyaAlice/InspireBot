@@ -3,14 +3,20 @@ import { styled } from '@mui/material/styles';
 import  ArrowForwardIosSharpIcon from '@mui/icons-material/ArrowForwardIosSharp';
 import { 
   Typography,
-  Box
+  Box,
+  CircularProgress
  }from '@mui/material';
  import MuiAccordionSummary from "@mui/material/AccordionSummary"
  import MuiAccordion from "@mui/material/Accordion"
  import  MuiAccordionDetails from "@mui/material/AccordionDetails"
 import TotalAvatars from './Avators';
 import Chips from './Chip';
-import { whereIContribute } from '../utils/endpoints';
+import { WhereIContributeThunk } from '../redux/action/whereIcontribute';
+import { useDispatch, useSelector } from 'react-redux';
+import { ContributeThunk } from '../redux/action/contribute';
+import { ContributeValid } from '../validation/SystemValidate';
+import { useForm } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
 
 const Accordion = styled((props) => (
   <MuiAccordion disableGutters elevation={0} square {...props} />
@@ -50,33 +56,41 @@ const AccordionDetails = styled(MuiAccordionDetails)(({ theme }) => ({
 
 export default function CustomizedAccordionSupport() {
   const [expanded, setExpanded] = useState(" ");
-  const [otherbusinessIdea, setOtherbusinessIdea] = useState([]);
   const [inputIdea, setInputIdea ] = useState();
+
+  const dispatch = useDispatch();
 
   const handleChange = (panel) => (event, newExpanded) => {
     setExpanded(newExpanded ? panel : false);
   };
   useEffect(async()=>{
-     const GetMyBusiness=async()=>{
-     const ideas = await whereIContribute();
-     console.log(ideas)
-     setOtherbusinessIdea(ideas.Ok)
-     }
-     await GetMyBusiness()
-  },[whereIContribute])
+    dispatch(WhereIContributeThunk());
+  },[dispatch])
+  const { register, handleSubmit,setValue, formState: { errors }} = useForm({
+    resolver: yupResolver(ContributeValid),
+  });
 
-  const submit=async(e)=>{
-    e.preventDefault();
-    const {content, businessId } = e.target.value
-    if(inputIdea){
-       await contribute(businessId,content)
-    }
+  const submit=async(data)=>{
+    const { businessId,content} = data;
+      await dispatch(ContributeThunk({businessId,content}));
+      setValue(" ");
+      dispatch(MyBusinessThunk())
   }
 
+   const {loading, myContribution,error } = useSelector((state)=>state.myContribution)
+  const {  load } = useSelector((state)=>state.contribution)
   return (
     <div>
-     {otherbusinessIdea?(
-      otherbusinessIdea?.map((Ideas, index)=>(
+     {loading?
+     (<div style={{textAlign: "center"}}>
+      <CircularProgress size={50} color="primary" />
+   </div>):  
+   ((myContribution?.length  === 0)|| error)?(
+    <div style={{textAlign: "center"}}>
+          <p>You are not contributing to any</p>
+    </div>
+  ):(
+    myContribution?.map((Ideas, index)=>(
        <Accordion expanded={expanded === `${Ideas.id}`} key={Ideas.id} onChange={handleChange(Ideas.id)} 
        sx={{borderRadius: "8px", marginBottom:"15px"}}
        >
@@ -116,18 +130,18 @@ export default function CustomizedAccordionSupport() {
               </Typography>
          </Box>
          <Box sx={{display:"flex", justifyContent:"space-between", marginTop: "40px"}}>
-              <form className="Form" onSubmit={submit}>
+         <form className="Form" onSubmit ={handleSubmit(submit).bind(Ideas.id)}>
                  <textarea 
                    className="textArea"
                    placeholder="Suggest what to change or add "
-                   value={inputIdea}
-                   name="content"
-                   onChange={(e) => setInputIdea(e.target.value)}
+                   {...register('content')}
                  />
-                 <input type="hidden" value={Ideas.id} name="businessId"/>
-                 <button type="submit" className="buttonComment">
-                     Contribute
-                 </button>
+                  <input type="hidden" value={Ideas.id} {...register('businessId')}/>
+                  <button type="submit" className="buttonComment">
+                  {load? <CircularProgress size={20} color="primary" />:"Contribute"}
+              </button>
+              
+                 
               </form>
          </Box>
           {Ideas.contributions.map((contribution)=>(
@@ -147,7 +161,7 @@ export default function CustomizedAccordionSupport() {
           </Box>
          </AccordionDetails>
        </Accordion>
-     ))):(<p>NO</p>)}
+     )))}
     </div>
   );
 }
