@@ -160,7 +160,6 @@ import {
             if(!email || !businessId){
                 return Err({InvalidPayload:"Invalid payload"});
             }
-        
             console.log(email)
             console.log(businessId)
             const businessOpt = BusinessIdeaStorage.get(businessId);

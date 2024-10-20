@@ -1,6 +1,7 @@
 import React, {useState,useContext} from "react";
 import  {
     Button,
+    CircularProgress,
     Dialog,
     DialogActions,
     DialogContent,
@@ -8,13 +9,16 @@ import  {
    } from '@mui/material';
 import CustomizedAccordions from "../component/Accordion";
 import ApiCall from "../context/ApiCall";
-import { createIdea } from "../utils/endpoints";
 import AuthContext from "../context/authContext";
 import Profile from "../component/Profile";
+import { useDispatch, useSelector } from "react-redux";
+import { CreateIdeaThunk } from "../redux/action/createIdea";
+import { MyBusinessThunk } from "../redux/action/MyBusiness";
 
 const Dashboard=()=>{
     const [open, setOpen] = useState(false);
-    const  [inputIdea, setInputIdea] = useState()
+    const  [inputIdea, setInputIdea] = useState();
+    const dispatch = useDispatch()
 
     const handleClickOpen = () => {
       setOpen(true);
@@ -26,7 +30,6 @@ const Dashboard=()=>{
   //Context
 
   const {hasProfile} = useContext(AuthContext);
-  console.log(hasProfile)
   if(!hasProfile){
     return <Profile/>
   }
@@ -43,11 +46,13 @@ const Dashboard=()=>{
             promptIdea: inputIdea,
             aiIdea
           }
-          await createIdea(data)
+          await dispatch(CreateIdeaThunk(data));
+          setInputIdea(" ");
+          dispatch(MyBusinessThunk())
         }
     }
   }
-
+   const { loadss,createIdea,error, } = useSelector((state)=>state.createIdea)
     return(
         <>
          <div className="Dashboard">
@@ -76,10 +81,11 @@ const Dashboard=()=>{
                  className="textArea"
                  placeholder="Describe your project, product or service idea"
                  value={inputIdea}
+                 name="idea"
                  onChange={(e) => setInputIdea(e.target.value)}
                  />           
                  <button type="submit" className="buttonComment">
-                     Submit
+                     {loadss? <CircularProgress size={20} color="primary" />:"Submit"}
                  </button>
               </form>
         </DialogContent>

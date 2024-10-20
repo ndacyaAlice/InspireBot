@@ -1,9 +1,12 @@
 import React, {useState,useEffect} from 'react';
 import { styled } from '@mui/material/styles';
 import  ArrowForwardIosSharpIcon from '@mui/icons-material/ArrowForwardIosSharp';
+import { yupResolver } from '@hookform/resolvers/yup';
+import { useForm } from 'react-hook-form';
 import { 
   Typography,
-  Box
+  Box,
+  CircularProgress
  }from '@mui/material';
  import MuiAccordionSummary from "@mui/material/AccordionSummary"
  import MuiAccordion from "@mui/material/Accordion"
@@ -12,7 +15,12 @@ import TotalAvatars from './Avators';
 import Add from "./Add"
 import Chips from './Chip';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { contribute, deleteContribution, getMyBusiness } from '../utils/endpoints';
+import { useDispatch,useSelector } from 'react-redux';
+import { ContributeThunk } from '../redux/action/contribute';
+import { MyBusinessThunk } from '../redux/action/MyBusiness';
+import { DeleteContributionThunk } from '../redux/action/deleteContribution';
+import { ContributeValid } from '../validation/SystemValidate';
+
 
 const Accordion = styled((props) => (
   <MuiAccordion disableGutters elevation={0} square {...props} />
@@ -51,45 +59,51 @@ const AccordionDetails = styled(MuiAccordionDetails)(({ theme }) => ({
 }));
 
 export default function CustomizedAccordions() {
-  const [expanded, setExpanded] = useState(" ");
-  const [MybusinessIdea, setMybusinessIdea] = useState([]);
-  const [inputIdea, setInputIdea ] = useState();
-  const [error,setError] = useState()
-
+  const [expanded, setExpanded] = useState(" "); 
   const handleChange = (panel) => (event, newExpanded) => {
     setExpanded(newExpanded ? panel : false);
   };
+  const dispatch = useDispatch()
   useEffect(async()=>{
-     const GetMyBusiness=async()=>{
-     const ideas = await getMyBusiness();
-     if(ideas.Ok){
-      setMybusinessIdea(ideas.Ok)
-      setError(" ")
-     }else if(ideas.Err){
-      setError(ideas.Err)
-     }
-     
-     }
-     await GetMyBusiness()
-  },[getMyBusiness])
+     dispatch(MyBusinessThunk());
+  },[dispatch])
+
+
+  const {  loading, myBusiness, error } = useSelector((state)=>state.myBusiness);
 
   // delete function
  const deletor=async(businessId,contributeId)=>{
- await deleteContribution(businessId,contributeId) 
+  dispatch(DeleteContributionThunk({businessId,contributeId}));
 }
-const submit=async(e)=>{
-  e.preventDefault();
-  const  content  = e.target[0].value;
-  const businessId = e.target[1].value;
-  if(inputIdea){
-    await contribute(businessId,content);
-  }
+const {  loader } = useSelector((state)=>state.deleteContribution)
+
+
+const { register, handleSubmit,setValue, formState: { errors }} = useForm({
+  resolver: yupResolver(ContributeValid),
+});
+
+const submit=async(data)=>{
+  const { businessId,content} = data;
+    await dispatch(ContributeThunk({businessId,content}));
+    setValue(" ");
+    dispatch(MyBusinessThunk())
 }
 
+const {load} = useSelector((state)=>state.contribution)
+
   return (
-    <div>
-     {MybusinessIdea?
-    (MybusinessIdea.map((Ideas, index)=>(
+    <div>  
+     {loading?
+     (<div style={{textAlign: "center"}}>
+      <CircularProgress size={50} color="primary" />
+   </div>):  
+   ((myBusiness?.length  === 0) || error)?(
+    <div style={{textAlign: "center"}}>
+          <p>No content you have posted yet</p>
+    </div>
+  ):
+    (myBusiness?.map((Ideas, index)=>(
+     <> 
       <Accordion expanded={expanded === `${Ideas.id}`} key={Ideas.id} onChange={handleChange(Ideas.id)} 
       sx={{borderRadius: "8px", marginBottom:"15px"}}
       >
@@ -130,18 +144,18 @@ const submit=async(e)=>{
              </Typography>
         </Box>
         <Box sx={{display:"flex", justifyContent:"space-between", marginTop: "40px"}}>
-              <form className="Form" onSubmit={submit}>
+              <form className="Form" onSubmit ={handleSubmit(submit).bind(Ideas.id)}>
                  <textarea 
                    className="textArea"
                    placeholder="Suggest what to change or add "
-                   value={inputIdea}
-                   name="content"
-                   onChange={(e) => setInputIdea(e.target.value)}
+                   {...register('content')}
                  />
-                  <input type="hidden" value={Ideas.id} name="businessId"/>
-                 <button type="submit" className="buttonComment">
-                     Contribute
-                 </button>
+                  <input type="hidden" value={Ideas.id} {...register('businessId')}/>
+                  <button type="submit" className="buttonComment">
+                  {load? <CircularProgress size={20} color="primary" />:"Contribute"}
+              </button>
+              
+                 
               </form>
         </Box>
          {Ideas.contributions?.map((contribution)=>(
@@ -159,13 +173,20 @@ const submit=async(e)=>{
               <Typography>
                  {contribution.content}
               </Typography>
-              <Box><button className="DeleteBtn" onClick={()=>{deletor(Ideas.id,contribution.contrId)}}><DeleteIcon/></button></Box>
+              <Box>
+                
+                <button className="DeleteBtn" onClick={()=>{deletor(Ideas.id,contribution.contrId)}}>
+                  {loader?<CircularProgress size={20} color="primary" />:<DeleteIcon/>}
+                  </button>
+                
+                </Box>
            </Box> 
          ))}  
          </Box>
         </AccordionDetails>
       </Accordion>
-    ))):(<p>NO Business idea</p>) 
+      </> 
+    )))
     }
     </div>
   );
