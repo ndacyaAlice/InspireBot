@@ -55,6 +55,13 @@ Before you begin, ensure you have met the following requirements:
  ```
 Please ensure all these prerequisites are met before proceeding with the setup of the project.
 
+### Recommendation:
+
+For seamless run,get your_openai_api_key before you proceed
+```
+ go to src/frontend/src/context/ApiCall.js assign your key to a variable call CHATGPT_API_KEY
+```
+
  # Installation 
   `
   - Clone the repository
